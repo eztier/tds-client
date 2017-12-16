@@ -3,12 +3,13 @@
 
 using namespace std;
 
-int spec_0(map<const string&, const string&> sqlconf, const string& script) {
+int spec_0(map<string, string> sqlconf, const string& script) {
   auto db = tds::TDSClient();
   int rc;
 
   rc = db.connect(sqlconf["host"], sqlconf["user"], sqlconf["pass"]);
-	if (rc)
+  
+  if (rc)
 		return rc;
 
   rc = db.useDatabase(sqlconf["database"]);
@@ -26,7 +27,7 @@ int spec_0(map<const string&, const string&> sqlconf, const string& script) {
 	return 0;  
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 
   int rc = 0;
 
@@ -37,4 +38,5 @@ int main() {
     }
   }
 
+  return rc;
 }

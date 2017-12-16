@@ -1,5 +1,4 @@
 #include "tds-client.h"
-#include "spdlog/spdlog.h"
 
 using namespace tds;
 
