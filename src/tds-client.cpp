@@ -113,29 +113,30 @@ int tds::TDSClient::getMetadata() {
     int c = pcol - columns + 1;
 
     pcol->name = dbcolname(dbproc, c);
-    pcol->type = dbcoltype(dbproc, c);
+    pcol->type = dbcoltype(dbproc, c); //xml 241, 
     pcol->size = dbcollen(dbproc, c);
-
-    if (SYBCHAR != pcol->type) {
-      pcol->size = dbprcollen(dbproc, c);
-      if (pcol->size > 255)
-        pcol->size = 255;
+cout << "type: " << pcol->type << endl;    
+cout << "size: " << pcol->size << endl;
+    if (pcol->size == INT_MAX) {
+      pcol->size = TINYINT_MAX;
+    } else {
+      pcol->size = 255;
     }
 
     fieldNames.push_back(move(string(pcol->name)));
 
+    // void *full_msg = calloc(full_msg_size, sizeof(char));
     if ((pcol->buffer = (char*)calloc(1, pcol->size + 1)) == NULL){
       perror(NULL);
       return 1;
     }
 
-    erc = dbbind(dbproc, c, NTBSTRINGBIND, pcol->size + 1, (BYTE*)pcol->buffer);
-    
+    erc = dbbind(dbproc, c, NTBSTRINGBIND, 0, (BYTE*)pcol->buffer);
+
     if (erc == FAIL) {
       spdlog::get(loggerName)->error("dbnullbind {} failed", c);
       return 1;
     }
-
     erc = dbnullbind(dbproc, c, &pcol->status);
     if (erc == FAIL) {
       spdlog::get(loggerName)->error("dbnullbind {} failed", c);

@@ -3,6 +3,13 @@
 
 using namespace std;
 
+auto getFile = [](const string& fileName) -> string {
+  ifstream doc(fileName);
+  string xstr;
+  xstr.assign(istreambuf_iterator<char>(doc), istreambuf_iterator<char>());
+  return move(xstr);
+};
+
 int spec_0(map<string, string> sqlconf, const string& script) {
   auto db = tds::TDSClient();
   int rc;
@@ -16,9 +23,17 @@ int spec_0(map<string, string> sqlconf, const string& script) {
 	if (rc)
 		return rc;
 
-  db.sql(script);
+  auto script2 = getFile("script.sql");
+cout << script2 << endl;
+  db.sql(script2);
 
 	rc = db.execute();
+
+  for (const auto& row : db.fieldValues) {
+    for (const auto& col: row) {
+      cout << col << endl;
+    }
+  }
 
 	if (rc) {
 		return rc;
@@ -30,9 +45,9 @@ int spec_0(map<string, string> sqlconf, const string& script) {
 int main(int argc, char *argv[]) {
 
   int rc = 0;
-
+cout << "Started..." << endl;
   {
-    rc = spec_0({{"host", "127.0.0.1"}, {"user", "guest"}, {"pass", "1234"}}, "select current_timestamp;");
+    rc = spec_0({{"host", "localhost"}, {"user", "admin"}, {"pass", "12345678"}, {"database", "master"}}, "select current_timestamp;");
     if (rc != 0) {
       throw ("Spec 0 failed.");
     }

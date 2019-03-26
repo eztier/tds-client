@@ -10,6 +10,8 @@
 
 #define TDSCLIENT_VERSION "0.1.2"
 #define NULL_BUFFER "NULL"
+#define INT_MAX 2147483647
+#define TINYINT_MAX 32767
 
 using namespace std;
 
