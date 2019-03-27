@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstring>
+#include <cassert>
 #include <iostream>
 #include <vector>
 #include <memory>
@@ -9,7 +11,7 @@
 #include <thread>
 #include <sybfront.h>	/* sybfront.h always comes first */
 #include <sybdb.h>	/* sybdb.h is the only other file you need */
-#include <boost/filesystem.hpp>
+// #include <boost/filesystem.hpp>
 // #include "spdlog/spdlog.h"
 
 #define TDSCLIENT_VERSION "0.1.4"
@@ -71,7 +73,7 @@ namespace tds {
     int ncols;
     int row_code;
 
-    char* nullBuffer = "";
+    char nullBuffer[1] = "";
     
     /*
     

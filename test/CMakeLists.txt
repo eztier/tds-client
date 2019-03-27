@@ -9,14 +9,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_CXX_FLAGS "-Wall -v")
 
-find_package(Boost 1.62.0 COMPONENTS thread date_time program_options filesystem system regex REQUIRED)
+# find_package(Boost 1.62.0 COMPONENTS thread date_time program_options filesystem system regex REQUIRED)
 
-set(SPDLOG ${PROJECT_SOURCE_DIR}/../vendor/spdlog-0.14.0/include)
+# set(SPDLOG ${PROJECT_SOURCE_DIR}/../vendor/spdlog-0.14.0/include)
 
 include_directories(
     /usr/local/include
     "${PROJECT_SOURCE_DIR}/../include"
-    "${SPDLOG}"
+    # "${SPDLOG}"
 )
 
 link_directories(
@@ -31,7 +31,8 @@ add_executable(testing ${CPP_SOURCES})
 
 target_link_libraries(
     testing
-    ${Boost_LIBRARIES} 
+    # ${Boost_LIBRARIES} 
     libsybdb.so
+    pthread
     "${PROJECT_SOURCE_DIR}/../build/lib/libtdsclient.so"
 )
