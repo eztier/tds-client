@@ -16,23 +16,30 @@ int spec_0(map<string, string> sqlconf, const string& script) {
 
   rc = db.connect(sqlconf["host"], sqlconf["user"], sqlconf["pass"]);
   
-  if (rc)
+  if (rc) {
+    cout << "No connection" << endl;
 		return rc;
+  }
 
   rc = db.useDatabase(sqlconf["database"]);
-	if (rc)
+	if (rc) {
+    cout << "Cannot switch database" << endl;
 		return rc;
+  }
 
   auto script2 = getFile("script.sql");
-cout << script2 << endl;
+
   db.sql(script2);
 
 	rc = db.execute();
 
-  for (const auto& row : db.fieldValues) {
+  for (auto& row : db.fieldValues) {
+    cout << row.at(0) << endl;
+    /*
     for (const auto& col: row) {
       cout << col << endl;
     }
+    */
   }
 
 	if (rc) {
@@ -49,7 +56,8 @@ cout << "Started..." << endl;
   {
     rc = spec_0({{"host", "localhost"}, {"user", "admin"}, {"pass", "12345678"}, {"database", "master"}}, "select current_timestamp;");
     if (rc != 0) {
-      throw ("Spec 0 failed.");
+      // throw ("Spec 0 failed.");
+      return rc;
     }
   }
 

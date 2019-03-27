@@ -6,9 +6,9 @@
 #include <sybfront.h>	/* sybfront.h always comes first */
 #include <sybdb.h>	/* sybdb.h is the only other file you need */
 #include <boost/filesystem.hpp>
-#include "spdlog/spdlog.h"
+// #include "spdlog/spdlog.h"
 
-#define TDSCLIENT_VERSION "0.1.2"
+#define TDSCLIENT_VERSION "0.1.3"
 #define NULL_BUFFER "NULL"
 #define INT_MAX 2147483647
 #define TINYINT_MAX 32767
@@ -26,7 +26,7 @@ namespace tds {
       char* name;
       char* buffer;
       int type, size, status;
-    } *columns, *pcol;
+    } *columns = NULL, *pcol = NULL;
 
     int init();
     int connect();
@@ -38,9 +38,19 @@ namespace tds {
     int fetchData();
     vector<string> fieldNames;
     vector<vector<string>> fieldValues;
-    TDSClient() { setupLog(); };
+    TDSClient() {};
     TDSClient(const string& _host, const string& _user, const string& _pass) : host(_host), user(_user), pass(_pass) { TDSClient(); };
-    ~TDSClient() {}
+    ~TDSClient() {
+      /* free metadata and data buffers */
+      if (columns != NULL) {
+        for (pcol = columns; pcol - columns < ncols; pcol++) {
+          if (pcol->buffer != NULL)
+            free(pcol->buffer);
+        }
+
+        free(columns);
+      }
+    }
   private:
     LOGINREC* login;
     DBPROCESS* dbproc;
@@ -52,7 +62,10 @@ namespace tds {
     int ncols;
     int row_code;
 
-    char* nullBuffer = "NULL";
+    char* nullBuffer = "";
+    
+    /*
+    
     void setupLog() {
       if (boost::filesystem::create_directory("./log")){
         boost::filesystem::path full_path(boost::filesystem::current_path());
@@ -67,5 +80,6 @@ namespace tds {
       combined_logger->set_pattern("[%Y-%m-%d %H:%M:%S:%e] [%l] [thread %t] %v");
       spdlog::register_logger(combined_logger);
     }
+    */
   };
 }

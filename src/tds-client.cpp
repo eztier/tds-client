@@ -4,14 +4,17 @@ using namespace tds;
 
 int err_handler_tdsclient(DBPROCESS* dbproc, int severity, int dberr, int oserr, char* dberrstr, char* oserrstr) {
   if ((dbproc == NULL) || (DBDEAD(dbproc))) {
-    spdlog::get(loggerName)->error("dbproc is NULL error: {}", dberrstr);
+    // spdlog::get(loggerName)->error("dbproc is NULL error: {}", dberrstr);
+    cerr << "dbproc is NULL error: {}" << dberrstr << endl;
     return(INT_CANCEL);
   }
   else {
-    spdlog::get(loggerName)->error("DB-Library error: {} {}", dberr, dberrstr);
+    // spdlog::get(loggerName)->error("DB-Library error: {} {}", dberr, dberrstr);
+    cerr << "DB-Library error: {} {}" << dberr << " " << dberrstr << endl;
 
     if (oserr != DBNOERR) {
-      spdlog::get(loggerName)->error("Operating-system error: {}", oserrstr);
+      // spdlog::get(loggerName)->error("Operating-system error: {}", oserrstr);
+      cerr << "Operating-system error: {}" << oserrstr << endl;
     }
     // DO NOT CALL dbclose(dbproc)!; tds needs to clean itself up!
     dbexit();
@@ -28,18 +31,19 @@ int msg_handler_tdsclient(DBPROCESS* dbproc, DBINT msgno, int msgstate, int seve
   if (msgno == 5701 || msgno == 5703)
     return(0);
 
-  spdlog::get(loggerName)->warn("msgno: {} severity: {} msgstate: {}", msgno, severity, msgstate);
+  // spdlog::get(loggerName)->warn("msgno: {} severity: {} msgstate: {}", msgno, severity, msgstate);
+  cout << "msgno: {} severity: {} msgstate: {}" << msgno << severity << msgstate << endl;
 
   if (strlen(srvname) > 0)
-    spdlog::get(loggerName)->warn("Server: {}", srvname);
+    // spdlog::get(loggerName)->warn("Server: {}", srvname);
 
   if (strlen(procname) > 0)
-    spdlog::get(loggerName)->warn("Procedure: {}", procname);
+    // spdlog::get(loggerName)->warn("Procedure: {}", procname);
 
   if (line > 0)
-    spdlog::get(loggerName)->warn("line: {}", line);
+    // spdlog::get(loggerName)->warn("line: {}", line);
 
-  spdlog::get(loggerName)->warn("msgtext: {}", msgtext);
+  // spdlog::get(loggerName)->warn("msgtext: {}", msgtext);
 
   return(0);
 }
@@ -53,7 +57,8 @@ int tds::TDSClient::connect(const string& _host, const string& _user, const stri
 
 int tds::TDSClient::init() {
   if (dbinit() == FAIL) {
-    spdlog::get(loggerName)->error("dbinit() failed");
+    // spdlog::get(loggerName)->error("dbinit() failed");
+    cerr << "dbinit() failed" << endl;
     return 1;
   }
   return 0;
@@ -61,7 +66,8 @@ int tds::TDSClient::init() {
 
 int tds::TDSClient::connect() {
   if (dbinit() == FAIL) {
-    spdlog::get(loggerName)->error("dbinit() failed");
+    // spdlog::get(loggerName)->error("dbinit() failed");
+    cerr << "dbinit() failed" << endl;
     return 1;
   }
 
@@ -70,7 +76,8 @@ int tds::TDSClient::connect() {
   
   // Get a LOGINREC.
   if ((login = dblogin()) == NULL) {
-    spdlog::get(loggerName)->error("connect() unable to allocate login structure");
+    // spdlog::get(loggerName)->error("connect() unable to allocate login structure");
+    cerr << "connect() unable to allocate login structure" << endl;
     return 1;
   }
 
@@ -86,7 +93,8 @@ int tds::TDSClient::connect() {
 
   // Connect to server
   if ((dbproc = dbopen(login, host.c_str())) == NULL) {
-    spdlog::get(loggerName)->error("connect() unable to connect to {}", host);
+    // spdlog::get(loggerName)->error("connect() unable to connect to {}", host);
+    cerr << "connect() unable to connect to {}" << host << endl;
     return 1;
   }
 
@@ -95,7 +103,8 @@ int tds::TDSClient::connect() {
 
 int tds::TDSClient::useDatabase(const string& db){
   if ((erc = dbuse(dbproc, db.c_str())) == FAIL) {
-    spdlog::get(loggerName)->error("useDatabase() unable to use database {}", db);
+    // spdlog::get(loggerName)->error("useDatabase() unable to use database {}", db);
+    cerr << "useDatabase() unable to use database {}" << db << endl;
     return 1;
   }
   return 0;
@@ -122,8 +131,6 @@ int tds::TDSClient::getMetadata() {
     pcol->name = dbcolname(dbproc, c);
     pcol->type = dbcoltype(dbproc, c); //xml 241, 
     pcol->size = dbcollen(dbproc, c);
-cout << "type: " << pcol->type << endl;    
-cout << "size: " << pcol->size << endl;
     if (pcol->size == INT_MAX) {
       pcol->size = TINYINT_MAX * 2;
     } else {
@@ -152,12 +159,14 @@ cout << "size: " << pcol->size << endl;
     }
     
     if (erc == FAIL) {
-      spdlog::get(loggerName)->error("dbnullbind {} failed", c);
+      // spdlog::get(loggerName)->error("dbnullbind {} failed", c);
+      cerr << "dbnullbind {} failed " << c << endl; 
       return 1;
     }
     erc = dbnullbind(dbproc, c, &pcol->status);
     if (erc == FAIL) {
-      spdlog::get(loggerName)->error("dbnullbind {} failed", c);
+      // spdlog::get(loggerName)->error("dbnullbind {} failed", c);
+      cerr << "dbnullbind {} failed " << c << endl;
       return 1;
     }
   }
@@ -168,7 +177,7 @@ cout << "size: " << pcol->size << endl;
 int tds::TDSClient::fetchData() {
   while ((row_code = dbnextrow(dbproc)) != NO_MORE_ROWS) {
     vector<string> row;
-
+    
     switch (row_code) {
     case REG_ROW:
       for (pcol = columns; pcol - columns < ncols; pcol++) {
@@ -185,20 +194,16 @@ int tds::TDSClient::fetchData() {
       break;
 
     case FAIL:
-      spdlog::get(loggerName)->error("dbresults failed");
-      return 1;
+      // spdlog::get(loggerName)->error("dbresults failed");
+      cerr << "dbresults failed" << endl;
+      break;
 
     default:
-      spdlog::get(loggerName)->info("Data for computeid {} ignored", row_code);
+      cerr << "Data for computeid {} ignored" << row_code << endl;
+      // spdlog::get(loggerName)->info("Data for computeid {} ignored", row_code);
     }
 
   }
-
-  /* free metadata and data buffers */
-  for (pcol = columns; pcol - columns < ncols; pcol++) {
-    free(pcol->buffer);
-  }
-  free(columns);
 
   return 0;
 };
@@ -207,13 +212,15 @@ int tds::TDSClient::execute() {
   auto status = dbsqlexec(dbproc);
 
   if (status == FAIL) {
-    spdlog::get(loggerName)->error("execute() dbsqlexec failed");
+    // spdlog::get(loggerName)->error("execute() dbsqlexec failed");
+    cerr << "execute() dbsqlexec failed" << endl;
     return 1;
   }
 
   while ((erc = dbresults(dbproc)) != NO_MORE_RESULTS) {
     if (erc == FAIL) {
-      spdlog::get(loggerName)->error("execute() no results");
+      // spdlog::get(loggerName)->error("execute() no results");
+      cerr << "execute() no results" << endl;
       return 1;
     }
 
