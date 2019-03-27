@@ -76,6 +76,13 @@ int tds::TDSClient::connect() {
 
   DBSETLUSER(login, user.c_str());
   DBSETLPWD(login, pass.c_str());
+  
+  dbsetlname(login, "UTF-8", DBSETCHARSET);
+  
+  // UTF16
+  dbsetlbool(login, 1, DBSETUTF16);
+  
+  dbsetlversion(login, DBVERSION_74);
 
   // Connect to server
   if ((dbproc = dbopen(login, host.c_str())) == NULL) {
@@ -118,7 +125,7 @@ int tds::TDSClient::getMetadata() {
 cout << "type: " << pcol->type << endl;    
 cout << "size: " << pcol->size << endl;
     if (pcol->size == INT_MAX) {
-      pcol->size = TINYINT_MAX;
+      pcol->size = TINYINT_MAX * 2;
     } else {
       pcol->size = 255;
     }
@@ -130,9 +137,20 @@ cout << "size: " << pcol->size << endl;
       perror(NULL);
       return 1;
     }
-
-    erc = dbbind(dbproc, c, NTBSTRINGBIND, 0, (BYTE*)pcol->buffer);
-
+    
+    // SYBMSDATETIME2 SYBMSDATETIMEOFFSET SYBMSTIME -> DATETIME2BIND(since 2014) 
+    // SYBMSXML -> SYBTEXT
+    // http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.help.ocs_12.5.1.dblib/html/dblib/X14206.htm
+    switch (pcol->type) {
+      case 35:
+      case 241: // xml
+        erc = dbbind(dbproc, c, BINARYBIND, 0, (BYTE*)pcol->buffer);
+        break;
+      default:
+        erc = dbbind(dbproc, c, NTBSTRINGBIND, 0, (BYTE*)pcol->buffer);
+        break;
+    }
+    
     if (erc == FAIL) {
       spdlog::get(loggerName)->error("dbnullbind {} failed", c);
       return 1;
@@ -154,6 +172,7 @@ int tds::TDSClient::fetchData() {
     switch (row_code) {
     case REG_ROW:
       for (pcol = columns; pcol - columns < ncols; pcol++) {
+        // cout << pcol->name << endl;
         char *buffer = pcol->status == -1 ? nullBuffer : pcol->buffer;
 
         row.push_back(move(string(buffer)));
