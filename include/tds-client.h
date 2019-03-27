@@ -3,12 +3,16 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <map>
+#include <sstream>
+#include <mutex>
+#include <thread>
 #include <sybfront.h>	/* sybfront.h always comes first */
 #include <sybdb.h>	/* sybdb.h is the only other file you need */
 #include <boost/filesystem.hpp>
 // #include "spdlog/spdlog.h"
 
-#define TDSCLIENT_VERSION "0.1.3"
+#define TDSCLIENT_VERSION "0.1.4"
 #define NULL_BUFFER "NULL"
 #define INT_MAX 2147483647
 #define TINYINT_MAX 32767
@@ -18,6 +22,8 @@ using namespace std;
 namespace tds {
   static string loggerName = "tds::tdsclient::logger";
   static string logName = "tdsclient";
+
+  std::mutex log_mutex;
 
   class TDSClient{
   public:
@@ -50,6 +56,9 @@ namespace tds {
 
         free(columns);
       }
+
+      dbclose(dbproc);
+      dbexit();
     }
   private:
     LOGINREC* login;
@@ -82,4 +91,44 @@ namespace tds {
     }
     */
   };
+
+  int quick(map<string, string>& sqlconf, const istream& input, vector<string>& fieldNames, vector<vector<string>>& fieldValues) {
+    std::lock_guard<std::mutex> lock(log_mutex);
+
+    if (sqlconf.count("host") == 0 || sqlconf.count("user") == 0 || sqlconf.count("pass") == 0 || sqlconf.count("database") == 0)
+      return 1;
+
+    auto db = tds::TDSClient();
+    int rc = 0;
+
+    rc = db.connect(sqlconf["host"], sqlconf["user"], sqlconf["pass"]);
+    
+    if (rc) {
+      cout << "No connection" << endl;
+      return rc;
+    }
+
+    rc = db.useDatabase(sqlconf["database"]);
+    if (rc) {
+      cout << "Cannot switch database" << endl;
+      return rc;
+    }
+
+    ostringstream oss;
+    oss << input.rdbuf();
+
+    db.sql(oss.str());
+
+    rc = db.execute();
+
+    if (rc) {
+      return rc;
+    }
+
+    // No errors
+    fieldNames = std::move(db.fieldNames);
+    fieldValues = std::move(db.fieldValues);
+
+    return rc;
+  }
 }

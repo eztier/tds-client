@@ -229,8 +229,6 @@ int tds::TDSClient::execute() {
     fetchData();
   }
 
-  dbclose(dbproc);
-  dbexit();
-
   return 0;
 };
+

@@ -1,64 +1,68 @@
 #include "tds-client.h"
-#include <map>
+#include <thread> 
 
 using namespace std;
 
-auto getFile = [](const string& fileName) -> string {
-  ifstream doc(fileName);
-  string xstr;
-  xstr.assign(istreambuf_iterator<char>(doc), istreambuf_iterator<char>());
-  return move(xstr);
-};
-
-int spec_0(map<string, string> sqlconf, const string& script) {
-  auto db = tds::TDSClient();
-  int rc;
-
-  rc = db.connect(sqlconf["host"], sqlconf["user"], sqlconf["pass"]);
+int spec_0 (map<string, string>& sqlconf, const istream& input) {
+  vector<string> fieldNames;
+  vector<vector<string>> fieldValues;
   
-  if (rc) {
-    cout << "No connection" << endl;
-		return rc;
+  auto rc = tds::quick(sqlconf, input, fieldNames, fieldValues);
+
+  if (rc) return rc;
+
+  cout << "Thread " << std::this_thread::get_id() << endl;
+
+  int idx = 0, cnt = fieldNames.size() - 1;
+  for (auto& fld : fieldNames) {
+    cout << fld << (idx < cnt ? "\t" : "");
+    idx++;
   }
-
-  rc = db.useDatabase(sqlconf["database"]);
-	if (rc) {
-    cout << "Cannot switch database" << endl;
-		return rc;
-  }
-
-  auto script2 = getFile("script.sql");
-
-  db.sql(script2);
-
-	rc = db.execute();
-
-  for (auto& row : db.fieldValues) {
-    cout << row.at(0) << endl;
-    /*
+  cout << endl;
+  idx = 0;
+  
+  for (auto& row : fieldValues) {
     for (const auto& col: row) {
-      cout << col << endl;
+      cout << col << (idx < cnt ? "\t" : "");
     }
-    */
+    cout << endl;
   }
-
-	if (rc) {
-		return rc;
-	}
+  cout << endl;
 
 	return 0;  
 }
 
-int main(int argc, char *argv[]) {
+auto main(int argc, char *argv[]) -> int {
 
   int rc = 0;
-cout << "Started..." << endl;
+
+  map<string, string> config{{"host", "localhost:1433"}, {"user", "admin"}, {"pass", "12345678"}, {"database", "master"}};
+
   {
-    rc = spec_0({{"host", "localhost"}, {"user", "admin"}, {"pass", "12345678"}, {"database", "master"}}, "select current_timestamp;");
-    if (rc != 0) {
-      // throw ("Spec 0 failed.");
-      return rc;
+    std::vector<std::thread> v;
+    for(int n = 0; n < 1000; ++n) {
+      v.emplace_back([&]{
+        spec_0(config, istringstream("select current_timestamp [time]"));
+      });
     }
+
+    this_thread::sleep_for(chrono::seconds(1));
+
+    for(auto& t : v) {
+      t.join();
+    }
+
+  }
+
+  switch ( argc ) {
+    case 1: 
+      rc = spec_0( config, istringstream("select current_timestamp") );
+      break;
+    case 2: 
+      rc = spec_0( config, ifstream( argv[1] ));
+      break;
+    default: 
+      exit( EXIT_FAILURE );
   }
 
   return rc;
