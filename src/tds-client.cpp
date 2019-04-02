@@ -16,9 +16,8 @@ int err_handler_tdsclient(DBPROCESS* dbproc, int severity, int dberr, int oserr,
       // spdlog::get(loggerName)->error("Operating-system error: {}", oserrstr);
       cerr << "Operating-system error: {}" << oserrstr << endl;
     }
-    // DO NOT CALL dbclose(dbproc)!; tds needs to clean itself up!
-    dbexit();
-
+    // DO NOT CALL dbclose(dbproc)! or dbexit(); tds needs to clean itself up!
+    
     return(INT_CANCEL);
   }
 }
@@ -131,7 +130,7 @@ int tds::TDSClient::getMetadata() {
     pcol->name = dbcolname(dbproc, c);
     pcol->type = dbcoltype(dbproc, c); //xml 241, 
     pcol->size = dbcollen(dbproc, c);
-    if (pcol->size == INT_MAX) {
+    if (pcol->size == __INT_MAX__) {
       pcol->size = TINYINT_MAX * 2;
     } else {
       pcol->size = 255;
