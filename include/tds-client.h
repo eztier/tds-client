@@ -95,8 +95,6 @@ namespace tds {
   };
 
   int quick(map<string, string>& sqlconf, const istream& input, vector<string>& fieldNames, vector<vector<string>>& fieldValues) {
-    std::lock_guard<std::mutex> lock(log_mutex);
-
     if (sqlconf.count("host") == 0 || sqlconf.count("user") == 0 || sqlconf.count("pass") == 0 || sqlconf.count("database") == 0)
       return 1;
 
