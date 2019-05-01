@@ -34,3 +34,5 @@ target_link_libraries(
     tdsclient
     libsybdb.so
 )
+
+install(TARGETS tdsclient  DESTINATION lib)
