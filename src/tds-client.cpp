@@ -4,20 +4,19 @@ using namespace tds;
 
 int err_handler_tdsclient(DBPROCESS* dbproc, int severity, int dberr, int oserr, char* dberrstr, char* oserrstr) {
   if ((dbproc == NULL) || (DBDEAD(dbproc))) {
-    // spdlog::get(loggerName)->error("dbproc is NULL error: {}", dberrstr);
-    cerr << "dbproc is NULL error: {}" << dberrstr << endl;
+    string err = "dbproc is NULL error: ";
+    err.append(dberrstr);
+    
+    throw tds::TDSException(err.c_str());
     return(INT_CANCEL);
   }
   else {
-    // spdlog::get(loggerName)->error("DB-Library error: {} {}", dberr, dberrstr);
     cerr << "DB-Library error: {} {}" << dberr << " " << dberrstr << endl;
 
     if (oserr != DBNOERR) {
-      // spdlog::get(loggerName)->error("Operating-system error: {}", oserrstr);
       cerr << "Operating-system error: {}" << oserrstr << endl;
     }
     // DO NOT CALL dbclose(dbproc)! or dbexit(); tds needs to clean itself up!
-    
     return(INT_CANCEL);
   }
 }
@@ -47,6 +46,8 @@ int msg_handler_tdsclient(DBPROCESS* dbproc, DBINT msgno, int msgstate, int seve
   return(0);
 }
 
+TDSException::TDSException(char const* const message) throw() : std::runtime_error(message) {}
+
 int tds::TDSClient::connect(const string& _host, const string& _user, const string& _pass){
   host = _host;
   user = _user;
@@ -56,7 +57,6 @@ int tds::TDSClient::connect(const string& _host, const string& _user, const stri
 
 int tds::TDSClient::init() {
   if (dbinit() == FAIL) {
-    // spdlog::get(loggerName)->error("dbinit() failed");
     cerr << "dbinit() failed" << endl;
     return 1;
   }
@@ -65,7 +65,6 @@ int tds::TDSClient::init() {
 
 int tds::TDSClient::connect() {
   if (dbinit() == FAIL) {
-    // spdlog::get(loggerName)->error("dbinit() failed");
     cerr << "dbinit() failed" << endl;
     return 1;
   }
@@ -75,7 +74,6 @@ int tds::TDSClient::connect() {
   
   // Get a LOGINREC.
   if ((login = dblogin()) == NULL) {
-    // spdlog::get(loggerName)->error("connect() unable to allocate login structure");
     cerr << "connect() unable to allocate login structure" << endl;
     return 1;
   }
@@ -92,8 +90,8 @@ int tds::TDSClient::connect() {
 
   // Connect to server
   if ((dbproc = dbopen(login, host.c_str())) == NULL) {
-    // spdlog::get(loggerName)->error("connect() unable to connect to {}", host);
-    cerr << "connect() unable to connect to {}" << host << endl;
+    string err = "connect() unable to connect to " + host;
+    throw tds::TDSException(err.c_str());
     return 1;
   }
 
@@ -102,7 +100,6 @@ int tds::TDSClient::connect() {
 
 int tds::TDSClient::useDatabase(const string& db){
   if ((erc = dbuse(dbproc, db.c_str())) == FAIL) {
-    // spdlog::get(loggerName)->error("useDatabase() unable to use database {}", db);
     cerr << "useDatabase() unable to use database {}" << db << endl;
     return 1;
   }
@@ -193,13 +190,11 @@ int tds::TDSClient::fetchData() {
       break;
 
     case FAIL:
-      // spdlog::get(loggerName)->error("dbresults failed");
       cerr << "dbresults failed" << endl;
       break;
 
     default:
       cerr << "Data for computeid {} ignored" << row_code << endl;
-      // spdlog::get(loggerName)->info("Data for computeid {} ignored", row_code);
     }
 
   }

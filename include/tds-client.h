@@ -14,7 +14,7 @@
 // #include <boost/filesystem.hpp>
 // #include "spdlog/spdlog.h"
 
-#define TDSCLIENT_VERSION "0.1.5"
+#define TDSCLIENT_VERSION "0.1.6"
 #define NULL_BUFFER "NULL"
 // #define INT_MAX 2147483647 // Just use __INT_MAX__
 #define TINYINT_MAX 32767
@@ -26,6 +26,11 @@ namespace tds {
   static string logName = "tdsclient";
 
   std::mutex log_mutex;
+
+  struct TDSException : public std::runtime_error { 
+  public:
+    TDSException(char const* const message) throw();
+  };
 
   class TDSClient{
   public:
