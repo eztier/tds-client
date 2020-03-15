@@ -71,6 +71,8 @@ int tds::TDSClient::connect() {
 
   //handle server/network errors
   dberrhandle((EHANDLEFUNC)err_handler_tdsclient);
+
+  dbmsghandle((MHANDLEFUNC)msg_handler_tdsclient);
   
   // Get a LOGINREC.
   if ((login = dblogin()) == NULL) {
