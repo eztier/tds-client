@@ -64,7 +64,7 @@ namespace tds {
         free(columns);
       }
 
-      dbclose(dbproc);
+      // dbclose(dbproc);
       dbexit();
     }
   private:

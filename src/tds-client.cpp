@@ -179,9 +179,7 @@ int tds::TDSClient::fetchData() {
     switch (row_code) {
     case REG_ROW:
       for (pcol = columns; pcol - columns < ncols; pcol++) {
-        // cout << pcol->name << endl;
-        char *buffer = pcol->status == -1 ? nullBuffer : pcol->buffer;
-
+        char *buffer = pcol->buffer != NULL ? pcol->buffer : nullBuffer;
         row.push_back(move(string(buffer)));
       }
       fieldValues.push_back(row);
