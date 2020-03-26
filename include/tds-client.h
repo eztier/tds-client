@@ -103,36 +103,37 @@ namespace tds {
     if (sqlconf.count("host") == 0 || sqlconf.count("user") == 0 || sqlconf.count("pass") == 0 || sqlconf.count("database") == 0)
       return 1;
 
-    auto db = tds::TDSClient();
     int rc = 0;
 
-    rc = db.connect(sqlconf["host"], sqlconf["user"], sqlconf["pass"]);
-    
-    if (rc) {
-      cout << "No connection" << endl;
-      return rc;
+    {
+      auto db = tds::TDSClient();
+      
+      rc = db.connect(sqlconf["host"], sqlconf["user"], sqlconf["pass"]);
+      
+      if (rc) {
+        cout << "No connection" << endl;
+        return rc;
+      }
+
+      rc = db.useDatabase(sqlconf["database"]);
+      if (rc) {
+        cout << "Cannot switch database" << endl;
+        return rc;
+      }
+
+      ostringstream oss;
+      oss << input.rdbuf();
+
+      db.sql(oss.str());
+
+      rc = db.execute();
+
+      // No errors
+      if (!rc) {
+        fieldNames = db.fieldNames; // std::move(db.fieldNames);
+        fieldValues = db.fieldValues; // std::move(db.fieldValues);
+      }
     }
-
-    rc = db.useDatabase(sqlconf["database"]);
-    if (rc) {
-      cout << "Cannot switch database" << endl;
-      return rc;
-    }
-
-    ostringstream oss;
-    oss << input.rdbuf();
-
-    db.sql(oss.str());
-
-    rc = db.execute();
-
-    if (rc) {
-      return rc;
-    }
-
-    // No errors
-    fieldNames = std::move(db.fieldNames);
-    fieldValues = std::move(db.fieldValues);
 
     return rc;
   }
