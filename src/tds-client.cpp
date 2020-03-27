@@ -192,10 +192,6 @@ int tds::TDSClient::fetchData() {
 				
         if (sz > 0 && pcol->buffer != NULL) {
           row.push_back(string(pcol->buffer));
-          
-          printf("%s\n", pcol->buffer);
-
-          free(pcol->buffer);
         } else {
           row.push_back("");
         }
@@ -215,10 +211,6 @@ int tds::TDSClient::fetchData() {
       cerr << "Data for computeid {} ignored" << row_code << endl;
     }
 
-  }
-
-  if (columns != NULL) {
-    free(columns);
   }
 
   return 0;
