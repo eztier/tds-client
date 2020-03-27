@@ -181,7 +181,14 @@ int tds::TDSClient::fetchData() {
     switch (row_code) {
     case REG_ROW:
       for (pcol = columns; pcol - columns < ncols; pcol++) {
-        if (pcol->status != -1)
+        //    From Microsoft documentation:
+        //    "A NULL BYTE pointer is returned if there is no such column or if the
+        //    data has a null value. To make sure that the data is really a null
+        //    value, check for a return of 0 from *dbdatlen*."
+        int c = pcol - columns + 1;
+        DBINT sz = dbdatlen(dbproc, c);
+				
+        if (sz > 0)
           row.push_back(move(string(pcol->buffer)));
         else
           row.push_back("");
