@@ -158,15 +158,17 @@ int tds::TDSClient::getMetadata() {
     
     if (erc == FAIL) {
       // spdlog::get(loggerName)->error("dbnullbind {} failed", c);
-      cerr << "dbnullbind {} failed " << c << endl; 
-      return 1;
+      cerr << "dbbind {} failed " << c << endl; 
+      // return 1;
     }
+
     erc = dbnullbind(dbproc, c, &pcol->status);
+    /*
     if (erc == FAIL) {
-      // spdlog::get(loggerName)->error("dbnullbind {} failed", c);
       cerr << "dbnullbind {} failed " << c << endl;
       return 1;
     }
+    */
   }
   
   return 0;
@@ -179,8 +181,10 @@ int tds::TDSClient::fetchData() {
     switch (row_code) {
     case REG_ROW:
       for (pcol = columns; pcol - columns < ncols; pcol++) {
-        char *buffer = pcol->buffer != NULL ? pcol->buffer : nullBuffer;
-        row.push_back(move(string(buffer)));
+        if (pcol->status != FAIL)
+          row.push_back(move(string(pcol->buffer)));
+        else
+          row.push_back("");
       }
       fieldValues.push_back(row);
       break;
