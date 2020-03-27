@@ -78,7 +78,7 @@ namespace tds {
     int ncols;
     int row_code;
 
-    char nullBuffer[1] = "";
+    // char nullBuffer[1] = "";
     
     /*
     

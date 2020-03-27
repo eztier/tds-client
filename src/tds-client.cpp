@@ -137,7 +137,6 @@ int tds::TDSClient::getMetadata() {
 
     fieldNames.push_back(move(string(pcol->name)));
 
-    // void *full_msg = calloc(full_msg_size, sizeof(char));
     if ((pcol->buffer = (char*)calloc(1, pcol->size + 1)) == NULL){
       // perror(NULL);
       // return 1;
@@ -189,9 +188,10 @@ int tds::TDSClient::fetchData() {
         //    value, check for a return of 0 from *dbdatlen*."
         int c = pcol - columns + 1;
         DBINT sz = dbdatlen(dbproc, c);
+        BYTE* data = dbdata(dbproc, c);
 				
-        if (sz > 0 && pcol->buffer != NULL)
-          row.push_back(move(string(pcol->buffer)));
+        if (sz > 0 && data != NULL)
+          row.push_back(move(string((char*)data))); // row.push_back(move(string(pcol->buffer)));
         else
           row.push_back("");
       }
