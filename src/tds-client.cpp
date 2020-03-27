@@ -139,8 +139,10 @@ int tds::TDSClient::getMetadata() {
 
     // void *full_msg = calloc(full_msg_size, sizeof(char));
     if ((pcol->buffer = (char*)calloc(1, pcol->size + 1)) == NULL){
-      perror(NULL);
-      return 1;
+      // perror(NULL);
+      // return 1;
+      cerr << "Cannot allocate buffer." << endl;
+      continue;
     }
     
     // SYBMSDATETIME2 SYBMSDATETIMEOFFSET SYBMSTIME -> DATETIME2BIND(since 2014) 
@@ -188,7 +190,7 @@ int tds::TDSClient::fetchData() {
         int c = pcol - columns + 1;
         DBINT sz = dbdatlen(dbproc, c);
 				
-        if (sz > 0)
+        if (sz > 0 && pcol->buffer != NULL)
           row.push_back(move(string(pcol->buffer)));
         else
           row.push_back("");
