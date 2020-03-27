@@ -188,12 +188,14 @@ int tds::TDSClient::fetchData() {
         //    value, check for a return of 0 from *dbdatlen*."
         int c = pcol - columns + 1;
         DBINT sz = dbdatlen(dbproc, c);
-        BYTE* data = dbdata(dbproc, c);
+        // BYTE* data = dbdata(dbproc, c);
 				
-        if (sz > 0 && data != NULL)
-          row.push_back(move(string((char*)data))); // row.push_back(move(string(pcol->buffer)));
-        else
+        if (sz > 0 && pcol->buffer != NULL) {
+          row.push_back(move(string(pcol->buffer)));
+          free(pcol->buffer);
+        } else {
           row.push_back("");
+        }
       }
       fieldValues.push_back(row);
       break;
@@ -210,6 +212,10 @@ int tds::TDSClient::fetchData() {
       cerr << "Data for computeid {} ignored" << row_code << endl;
     }
 
+  }
+
+  if (columns != NULL) {
+    free(columns);
   }
 
   return 0;

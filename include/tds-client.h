@@ -56,6 +56,8 @@ namespace tds {
     ~TDSClient() {
       /* free metadata and data buffers */
       if (columns != NULL) {
+        cerr << "Freeing..." << endl;
+
         for (pcol = columns; pcol - columns < ncols; pcol++) {
           if (pcol->buffer != NULL)
             free(pcol->buffer);
