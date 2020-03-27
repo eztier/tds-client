@@ -191,7 +191,10 @@ int tds::TDSClient::fetchData() {
         // BYTE* data = dbdata(dbproc, c);
 				
         if (sz > 0 && pcol->buffer != NULL) {
-          row.push_back(move(string(pcol->buffer)));
+          row.push_back(string(pcol->buffer));
+          
+          printf("%s\n", pcol->buffer);
+
           free(pcol->buffer);
         } else {
           row.push_back("");
