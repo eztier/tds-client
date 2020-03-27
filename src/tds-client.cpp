@@ -181,7 +181,7 @@ int tds::TDSClient::fetchData() {
     switch (row_code) {
     case REG_ROW:
       for (pcol = columns; pcol - columns < ncols; pcol++) {
-        if (pcol->status != FAIL)
+        if (pcol->status != -1)
           row.push_back(move(string(pcol->buffer)));
         else
           row.push_back("");
