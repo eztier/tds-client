@@ -29,19 +29,7 @@ int msg_handler_tdsclient(DBPROCESS* dbproc, DBINT msgno, int msgstate, int seve
   if (msgno == 5701 || msgno == 5703)
     return(0);
 
-  // spdlog::get(loggerName)->warn("msgno: {} severity: {} msgstate: {}", msgno, severity, msgstate);
   cout << "msgno: {} severity: {} msgstate: {}" << msgno << severity << msgstate << endl;
-
-  if (strlen(srvname) > 0)
-    // spdlog::get(loggerName)->warn("Server: {}", srvname);
-
-  if (strlen(procname) > 0)
-    // spdlog::get(loggerName)->warn("Procedure: {}", procname);
-
-  if (line > 0)
-    // spdlog::get(loggerName)->warn("line: {}", line);
-
-  // spdlog::get(loggerName)->warn("msgtext: {}", msgtext);
 
   return(0);
 }
@@ -138,8 +126,6 @@ int tds::TDSClient::getMetadata() {
     fieldNames.push_back(move(string(pcol->name)));
 
     if ((pcol->buffer = (char*)calloc(1, pcol->size + 1)) == NULL){
-      // perror(NULL);
-      // return 1;
       cerr << "Cannot allocate buffer." << endl;
       continue;
     }
@@ -157,19 +143,12 @@ int tds::TDSClient::getMetadata() {
         break;
     }
     
-    if (erc == FAIL) {
-      // spdlog::get(loggerName)->error("dbnullbind {} failed", c);
+    if (erc == FAIL)
       cerr << "dbbind {} failed " << c << endl; 
-      // return 1;
-    }
-
+    
     erc = dbnullbind(dbproc, c, &pcol->status);
-    /*
-    if (erc == FAIL) {
+    if (erc == FAIL)
       cerr << "dbnullbind {} failed " << c << endl;
-      return 1;
-    }
-    */
   }
   
   return 0;
@@ -186,11 +165,8 @@ int tds::TDSClient::fetchData() {
         //    "A NULL BYTE pointer is returned if there is no such column or if the
         //    data has a null value. To make sure that the data is really a null
         //    value, check for a return of 0 from *dbdatlen*."
-        int c = pcol - columns + 1;
-        DBINT sz = dbdatlen(dbproc, c);
-        // BYTE* data = dbdata(dbproc, c);
-				
-        if (sz > 0 && pcol->buffer != NULL) {
+        
+        if (pcol->buffer != NULL) {
           row.push_back(string(pcol->buffer));
         } else {
           row.push_back("");
@@ -220,14 +196,12 @@ int tds::TDSClient::execute() {
   auto status = dbsqlexec(dbproc);
 
   if (status == FAIL) {
-    // spdlog::get(loggerName)->error("execute() dbsqlexec failed");
     cerr << "execute() dbsqlexec failed" << endl;
     return 1;
   }
 
   while ((erc = dbresults(dbproc)) != NO_MORE_RESULTS) {
     if (erc == FAIL) {
-      // spdlog::get(loggerName)->error("execute() no results");
       cerr << "execute() no results" << endl;
       return 1;
     }

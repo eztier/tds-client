@@ -11,12 +11,9 @@
 #include <thread>
 #include <sybfront.h>	/* sybfront.h always comes first */
 #include <sybdb.h>	/* sybdb.h is the only other file you need */
-// #include <boost/filesystem.hpp>
-// #include "spdlog/spdlog.h"
 
 #define TDSCLIENT_VERSION "0.1.6"
 #define NULL_BUFFER "NULL"
-// #define INT_MAX 2147483647 // Just use __INT_MAX__
 #define TINYINT_MAX 32767
 
 using namespace std;
@@ -56,8 +53,6 @@ namespace tds {
     ~TDSClient() {
       /* free metadata and data buffers */
       if (columns != NULL) {
-        cerr << "Freeing..." << endl;
-
         for (pcol = columns; pcol - columns < ncols; pcol++) {
           if (pcol->buffer != NULL)
             free(pcol->buffer);
@@ -66,7 +61,7 @@ namespace tds {
         free(columns);
       }
 
-      // dbclose(dbproc);
+      dbclose(dbproc);
       dbexit();
     }
   private:
@@ -79,26 +74,6 @@ namespace tds {
     string script;
     int ncols;
     int row_code;
-
-    // char nullBuffer[1] = "";
-    
-    /*
-    
-    void setupLog() {
-      if (boost::filesystem::create_directory("./log")){
-        boost::filesystem::path full_path(boost::filesystem::current_path());
-      }
-  
-      size_t q_size = 1048576; //queue size must be power of 2
-      spdlog::set_async_mode(q_size);
-  
-      std::vector<spdlog::sink_ptr> sinks;
-      sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>("log/" + logName, 0, 0));
-      auto combined_logger = std::make_shared<spdlog::logger>(loggerName, begin(sinks), end(sinks));
-      combined_logger->set_pattern("[%Y-%m-%d %H:%M:%S:%e] [%l] [thread %t] %v");
-      spdlog::register_logger(combined_logger);
-    }
-    */
   };
 
   int quick(map<string, string>& sqlconf, const istream& input, vector<string>& fieldNames, vector<vector<string>>& fieldValues) {
@@ -132,8 +107,8 @@ namespace tds {
 
       // No errors
       if (!rc) {
-        fieldNames = db.fieldNames; // std::move(db.fieldNames);
-        fieldValues = db.fieldValues; // std::move(db.fieldValues);
+        fieldNames = std::move(db.fieldNames);
+        fieldValues = std::move(db.fieldValues);
       }
     }
 
