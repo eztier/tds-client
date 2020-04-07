@@ -120,7 +120,7 @@ int tds::TDSClient::getMetadata() {
     if (pcol->size == __INT_MAX__) {
       pcol->size = TINYINT_MAX * 2;
     } else {
-      pcol->size = 255;
+      pcol->size = pcol->size > 255 ? pcol->size * 2 : 255;
     }
 
     fieldNames.push_back(move(string(pcol->name)));
