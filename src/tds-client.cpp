@@ -118,7 +118,8 @@ int tds::TDSClient::getMetadata() {
     pcol->type = dbcoltype(dbproc, c); //xml 241, 
     pcol->size = dbcollen(dbproc, c);
     if (pcol->size == __INT_MAX__) {
-      pcol->size = TINYINT_MAX * 2;
+      // About 1 MB.
+      pcol->size = TINYINT_MAX * 32;
     } else {
       pcol->size = pcol->size > 255 ? pcol->size * 2 : 255;
     }

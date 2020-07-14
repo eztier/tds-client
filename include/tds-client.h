@@ -12,7 +12,7 @@
 #include <sybfront.h>	/* sybfront.h always comes first */
 #include <sybdb.h>	/* sybdb.h is the only other file you need */
 
-#define TDSCLIENT_VERSION "0.1.6"
+#define TDSCLIENT_VERSION "0.1.7"
 #define NULL_BUFFER "NULL"
 #define TINYINT_MAX 32767
 
