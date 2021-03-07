@@ -1,9 +1,3 @@
-#[[
-  mkdir -p ~/freetds & cd ~/freetds & wget ftp://ftp.freetds.org/pub/freetds/stable/freetds-patched.tar.gz
-  tar xvzf freetds-patched.tar.gz
-  cd freetds-1.00.80 & ./configure & make & sudo make install
-]]
-
 cmake_minimum_required(VERSION 3.2)
 
 project(tdsclient VERSION 0.1.1 LANGUAGES C CXX)
@@ -20,9 +14,14 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 # set(SPDLOG ${PROJECT_SOURCE_DIR}/vendor/spdlog-0.14.0/include)
 
 include_directories(
-    /usr/local/include
     "${PROJECT_SOURCE_DIR}/include"
+    /usr/local/include
     # "${SPDLOG}"
+)
+
+link_directories(
+  /usr/local/lib
+  /usr/local/opt/freetds/lib
 )
 
 set(CPP_SOURCES
@@ -33,8 +32,10 @@ add_library(tdsclient SHARED ${CPP_SOURCES})
 
 target_link_libraries(
     tdsclient
-    libsybdb.so
+    sybdb
 )
 
-install(FILES ${PROJECT_SOURCE_DIR}/include/tds-client.h DESTINATION include)
+# install(FILES ${PROJECT_SOURCE_DIR}/include/tds-client.h DESTINATION include)
+install(DIRECTORY  ${PROJECT_SOURCE_DIR}/include DESTINATION include
+    FILES_MATCHING PATTERN "*.h")
 install(TARGETS tdsclient  DESTINATION lib)

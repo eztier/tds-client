@@ -21,10 +21,12 @@ include_directories(
 
 link_directories(
   /usr/local/lib
+  /usr/local/opt/freetds/lib
+  "${PROJECT_SOURCE_DIR}/../build/lib"
 )
 
 set(CPP_SOURCES
-    "${PROJECT_SOURCE_DIR}/index.cpp"
+  "${PROJECT_SOURCE_DIR}/index.cpp"
 )
 
 add_executable(testing ${CPP_SOURCES})
@@ -32,7 +34,7 @@ add_executable(testing ${CPP_SOURCES})
 target_link_libraries(
     testing
     # ${Boost_LIBRARIES} 
-    libsybdb.so
+    sybdb
     pthread
-    "${PROJECT_SOURCE_DIR}/../build/lib/libtdsclient.so"
+    tdsclient
 )
