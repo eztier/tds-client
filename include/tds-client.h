@@ -12,7 +12,9 @@
 
 #include <unistd.h>
 #define INT64_T_DEFINED
+#ifdef __APPLE__
 #include "./tds_sysdep_public_port.h"
+#endif
 
 #include <sybfront.h>	/* sybfront.h always comes first */
 #include <sybdb.h>	/* sybdb.h is the only other file you need */
