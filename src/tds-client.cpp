@@ -119,9 +119,9 @@ int tds::TDSClient::getMetadata() {
     pcol->size = dbcollen(dbproc, c);
     if (pcol->size == __INT_MAX__) {
       // About 1 MB.
-      pcol->size = TINYINT_MAX * 32;
+      pcol->size = TINYINT_MAX * 64;
     } else {
-      pcol->size = pcol->size > 255 ? pcol->size * 2 : 255;
+      pcol->size = pcol->size > 255 ? pcol->size * 4 : 255;
     }
 
     fieldNames.push_back(move(string(pcol->name)));
